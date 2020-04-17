@@ -22,7 +22,7 @@ create_demo_page() {
   echo -e "added simple view under \e[32mapp/views/$1/index.html.erb\e[0m"
 
   truncate -s 0 "app/assets/stylesheets/application.css"
-  printf "/* = require_self */\n/* = require_tree . */" > app/assets/stylesheets/application.css
+  printf "/* = require_tree . */\n/* = require_self */" > app/assets/stylesheets/application.css
   touch app/assets/stylesheets/main.scss
   printf "@import \"components/$1.scss\";\n" >> app/assets/stylesheets/main.scss
   mkdir -p app/assets/stylesheets/components

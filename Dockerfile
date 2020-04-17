@@ -1,4 +1,11 @@
-FROM ruby:2.6.5-slim-buster
+  
+ARG RUBY_VERSION
+FROM ruby:$RUBY_VERSION-slim-buster
+
+ARG PG_MAJOR
+ARG NODE_MAJOR
+ARG BUNDLER_VERSION
+ARG YARN_VERSION
 
 # Common dependencies
 RUN apt-get update -qq \
@@ -7,10 +14,10 @@ RUN apt-get update -qq \
 
 # Add PostgreSQL to sources list
 RUN curl -sSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-  && echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' 11 > /etc/apt/sources.list.d/pgdg.list
+  && echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' $PG_MAJOR > /etc/apt/sources.list.d/pgdg.list
 
 # Add NodeJS to sources list
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_$NODE_MAJOR.x | bash -
 
 # Add Yarn to the sources list
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
@@ -19,14 +26,23 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 # Install dependencies
 RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrade && \
   DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
-    libpq-dev postgresql-client-11 nodejs yarn=1.19.1-1 && \
+    libpq-dev postgresql-client-$PG_MAJOR nodejs yarn=$YARN_VERSION-1 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     truncate -s 0 /var/log/*log
 
-# Create and install our Ruby-on-Rails project
-RUN mkdir /railsapp
+# Configure bundler
+ENV LANG=C.UTF-8 \
+  BUNDLE_JOBS=4 \
+  BUNDLE_RETRY=3
+
+# Upgrade RubyGems and install required Bundler version
+RUN gem update --system && \
+    rm /usr/local/lib/ruby/gems/*/specifications/default/bundler-*.gemspec && \
+    gem uninstall bundler && \
+    gem install bundler -v $BUNDLER_VERSION
+
+# Create a directory for the app code
+RUN mkdir -p /railsapp
+
 WORKDIR /railsapp
-COPY .dockerdev/Gemfile /railsapp/Gemfile
-RUN bundle install
-COPY . /railsapp

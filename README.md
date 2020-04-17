@@ -40,28 +40,19 @@ It will create a new rails application with version 6.0.2.2.
 the script is under .dockerdev/.bashrc. It will 
 
 1) install rails, 
-2) run the "rails new" command without bundle install and webpacker install
-3) runs bundle install and webpacker install with the correct bundler version
-
-### 3. Adapt database.yml and webpacker.yml to Docker configuration
-
-Open and change config/database.yml
-```
-default: &default
-  host: db_srv # <---- add this property
-  username: myuser # <---- add this property
-```
+2) run the "rails new" command without bundle install and webpacker install,
+3) runs bundle install and webpacker install with the correct bundler version,
+4) configure database.yml and webpacker.yml so that they are mapped with our docker services.
 
 ### 4. Create hello world page
 
 Run :
 ```
-docker-compose run --rm --no-deps web_srv rails generate controller hello say_hello
-``` 
+docker-compose run --rm web_srv bash
+$> create_demo_page calendar
+```
 
-Flag explanations:
-* **--no-deps** - Tells `docker-compose run` not to start any of the services in `depends_on`.
-* **--rm** - Removes container after run
+It will generate a demo page under the /calendar URL, with a simple css component and a simple JS component
 
 ### 5. Start services
 
@@ -71,7 +62,7 @@ docker-compose up
 
 ### 6. Visit "hello world" page
 
-go to http://localhost:3000/hello/say_hello
+go to http://localhost:3000/calendar
 
  - Open the browser console to check that CSS, JS loaded correctly and no 404 request occured.
  - Check also the logs of the services in your terminal to notice that no error occured.

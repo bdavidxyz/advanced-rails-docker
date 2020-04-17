@@ -2,7 +2,7 @@ version: '2.4'
 
 x-app: &app
   env_file:
-    - dockerenv.env
+    - .dockerenv
   build:
     context: .
     dockerfile: ./.dockerdev/Dockerfile
@@ -59,7 +59,7 @@ services:
     <<: *backend
     command: bundle exec rails server -b 0.0.0.0
     ports:
-      - '3000:3000'
+      - '127.0.0.1:3000:3000'
 
   sidekiq:
     <<: *backend
@@ -101,9 +101,6 @@ services:
       - bundle:/usr/local/bundle
       - node_modules:/app/node_modules
       - packs:/app/public/packs
-    environment:
-      <<: *env
-      WEBPACKER_DEV_SERVER_HOST: 0.0.0.0
 
 volumes:
   postgres:
