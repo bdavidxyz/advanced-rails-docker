@@ -1,0 +1,41 @@
+version: '2.2'
+
+services:
+
+  db_srv:
+    image: postgres:11.1
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - '.dockerdev/init.sql:/docker-entrypoint-initdb.d/init.sql'
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+
+  webpack_srv:
+    build: .
+    command: ./bin/webpack-dev-server --inline true
+    volumes:
+      - '.:/railsapp'
+      - bundle:/usr/local/bundle
+      - node_modules:/railsapp/node_modules
+    ports:
+      - '3035:3035'
+
+  web_srv:
+    build: .
+    command: bash -c "rm -rf /railsapp/tmp/pids/server.pid && rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - '.:/railsapp'
+      - bundle:/usr/local/bundle
+      - node_modules:/railsapp/node_modules
+    ports:
+      - '127.0.0.1:3000:3000'
+    depends_on:
+      - db_srv
+      - webpack_srv
+
+volumes:
+  bundle:
+  pgdata:
+  node_modules:
