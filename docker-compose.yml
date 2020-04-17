@@ -70,6 +70,8 @@ services:
       - ./log:/root/log:cached
     environment:
       PSQL_HISTFILE: /root/log/.psql_history
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - 5432
     healthcheck:
