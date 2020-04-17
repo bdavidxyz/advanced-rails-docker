@@ -31,7 +31,7 @@ docker-compose build
 
 Run :
 ```
-docker-compose run --rm rails bash
+docker-compose run --rm runner
 create_new_rails_app 6.0.2.2
 ```
 
