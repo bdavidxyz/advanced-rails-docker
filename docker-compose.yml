@@ -1,5 +1,42 @@
 version: '2.2'
 
+x-backend: &backend
+  image: advanced-rails-docker:1.0.0
+  env_file:
+    - dockerenv.env
+  build:
+    context: .
+    dockerfile: ./.dockerdev/Dockerfile
+    args:
+      RUBY_VERSION: "${RUBY_VERSION}"
+      PG_MAJOR: "${PG_MAJOR}"
+      NODE_MAJOR: "${NODE_MAJOR}"
+      YARN_VERSION: "${YARN_VERSION}"
+      BUNDLER_VERSION: "${BUNDLER_VERSION}"
+  environment:
+    NODE_ENV: development
+    RAILS_ENV: ${RAILS_ENV:-development}
+    REDIS_URL: redis://redis:6379/
+    DATABASE_URL: postgres://postgres:postgres@postgres:5432
+    BOOTSNAP_CACHE_DIR: /usr/local/bundle/_bootsnap
+    WEBPACKER_DEV_SERVER_HOST: webpack_srv
+  tmpfs:
+    - /tmp
+  stdin_open: true
+  tty: true
+  volumes:
+    - .:/railsapp:cached
+    - rails_cache:/railsapp/tmp/cache
+    - bundle:/usr/local/bundle
+    - packs:/railsapp/public/packs
+    - node_modules:/railsapp/node_modules
+    - .dockerdev/.psqlrc:/root/.psqlrc:ro
+    - .dockerdev/.bashrc:/root/.bashrc:ro
+  depends_on:
+    - postgres
+    - redis
+
+
 services:
 
   db_srv:
@@ -29,6 +66,7 @@ services:
       - '.:/railsapp'
       - bundle:/usr/local/bundle
       - node_modules:/railsapp/node_modules
+      - .dockerdev/.bashrc:/root/.bashrc:ro
     ports:
       - '127.0.0.1:3000:3000'
     depends_on:

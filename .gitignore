@@ -1,3 +1,4 @@
+
 # designed for node,ruby,rails,linux,macos
 
 ### Linux ###
@@ -105,6 +106,7 @@ typings/
 .yarn-integrity
 
 # dotenv environment variables file
+.env
 .env.test
 
 # parcel-bundler cache (https://parceljs.org/)

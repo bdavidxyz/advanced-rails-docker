@@ -1,10 +1,10 @@
-# Simplest possible Rails 6 + docker-compose project
+# Advanced Rails 6 + docker-compose project
 
-This repository is intended to be the simplest possible Rails 6 + docker-compose demo.
+This repository is intended to be a professional starter kit for any new monolithic Rails application.
 
-It builds and runs a simple "hello" page locally.
+It provides a professional workflow for most Rails use case : migration, real-time, caching, mailing, etc.
 
-Rails, Database and Webpacker are the 3 mandatory services to get things works.
+It provides a way to deploy the application in production as seamlessly as possible.
 
 ## Steps to reproduce
 
@@ -31,16 +31,17 @@ docker-compose build
 
 Run :
 ```
-docker-compose run --rm --no-deps web_srv rails new . --skip --database=postgresql
+docker-compose run --rm web_srv bash
+$> create_new_rails_app 6.0.2.2
 ```
 
-This will run the `rails new` command on our `web_srv` service defined in docker-compose.yml.
+It will create a new rails application with version 6.0.2.2.
 
-Flag explanations:
-* **--no-deps** - Tells `docker-compose run` not to start any of the services in `depends_on`.
-* **--skip** - Tells rails NOT to overwrite existing files, such as README or .gitignore
-* **--database=postgresql** - Tells Rails to default our db config to use postgres.
-* **--rm** - Removes container after run
+the script is under .dockerdev/.bashrc. It will 
+
+1) install rails, 
+2) run the "rails new" command without bundle install and webpacker install
+3) runs bundle install and webpacker install with the correct bundler version
 
 ### 3. Adapt database.yml and webpacker.yml to Docker configuration
 
