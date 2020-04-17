@@ -1,7 +1,6 @@
-version: '2.2'
+version: '2.4'
 
-x-backend: &backend
-  image: advanced-rails-docker:1.0.0
+x-app: &app
   env_file:
     - dockerenv.env
   build:
@@ -13,67 +12,103 @@ x-backend: &backend
       NODE_MAJOR: "${NODE_MAJOR}"
       YARN_VERSION: "${YARN_VERSION}"
       BUNDLER_VERSION: "${BUNDLER_VERSION}"
-  environment:
+  environment: &env
     NODE_ENV: development
     RAILS_ENV: ${RAILS_ENV:-development}
-    REDIS_URL: redis://redis:6379/
-    DATABASE_URL: postgres://postgres:postgres@postgres:5432
-    BOOTSNAP_CACHE_DIR: /usr/local/bundle/_bootsnap
-    WEBPACKER_DEV_SERVER_HOST: webpack_srv
+  image: example-dev:1.1.0
   tmpfs:
     - /tmp
+
+x-backend: &backend
+  <<: *app
   stdin_open: true
   tty: true
   volumes:
-    - .:/railsapp:cached
-    - rails_cache:/railsapp/tmp/cache
+    - .:/app:cached
+    - rails_cache:/app/tmp/cache
     - bundle:/usr/local/bundle
-    - packs:/railsapp/public/packs
-    - node_modules:/railsapp/node_modules
+    - node_modules:/app/node_modules
+    - packs:/app/public/packs
     - .dockerdev/.psqlrc:/root/.psqlrc:ro
     - .dockerdev/.bashrc:/root/.bashrc:ro
+  environment:
+    <<: *env
+    REDIS_URL: redis://redis:6379/
+    DATABASE_URL: postgres://postgres:postgres@postgres:5432
+    BOOTSNAP_CACHE_DIR: /usr/local/bundle/_bootsnap
+    WEBPACKER_DEV_SERVER_HOST: webpacker
+    WEB_CONCURRENCY: 1
+    HISTFILE: /app/log/.bash_history
+    PSQL_HISTFILE: /app/log/.psql_history
+    EDITOR: vi
   depends_on:
-    - postgres
-    - redis
-
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
 
 services:
-
-  db_srv:
-    image: postgres:11.1
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - '.dockerdev/init.sql:/docker-entrypoint-initdb.d/init.sql'
+  runner:
+    <<: *backend
+    command: /bin/bash
     ports:
-      - '5432:5432'
-    environment:
-      POSTGRES_HOST_AUTH_METHOD: "trust"
+      - '3000:3000'
+      - '3002:3002'
 
-  webpack_srv:
-    build: .
-    command: ./bin/webpack-dev-server --inline true
+  rails:
+    <<: *backend
+    command: bundle exec rails server -b 0.0.0.0
+    ports:
+      - '3000:3000'
+
+  sidekiq:
+    <<: *backend
+    command: bundle exec sidekiq -C config/sidekiq.yml
+
+  postgres:
+    image: "postgres:${PG_MAJOR}"
     volumes:
-      - '.:/railsapp'
-      - bundle:/usr/local/bundle
-      - node_modules:/railsapp/node_modules
+      - .dockerdev/.psqlrc:/root/.psqlrc:ro
+      - postgres:/var/lib/postgresql/data
+      - ./log:/root/log:cached
+    environment:
+      PSQL_HISTFILE: /root/log/.psql_history
+    ports:
+      - 5432
+    healthcheck:
+      test: pg_isready -U postgres -h 127.0.0.1
+      interval: 5s
+
+  redis:
+    image: "redis:${REDIS_VERSION}-alpine"
+    volumes:
+      - redis:/data
+    ports:
+      - 6379
+    healthcheck:
+      test: redis-cli ping
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  webpacker:
+    <<: *app
+    command: ./bin/webpack-dev-server
     ports:
       - '3035:3035'
-
-  web_srv:
-    build: .
-    command: bash -c "rm -rf /railsapp/tmp/pids/server.pid && rails s -p 3000 -b '0.0.0.0'"
     volumes:
-      - '.:/railsapp'
+      - .:/app:cached
       - bundle:/usr/local/bundle
-      - node_modules:/railsapp/node_modules
-      - .dockerdev/.bashrc:/root/.bashrc:ro
-    ports:
-      - '127.0.0.1:3000:3000'
-    depends_on:
-      - db_srv
-      - webpack_srv
+      - node_modules:/app/node_modules
+      - packs:/app/public/packs
+    environment:
+      <<: *env
+      WEBPACKER_DEV_SERVER_HOST: 0.0.0.0
 
 volumes:
+  postgres:
+  redis:
   bundle:
-  pgdata:
   node_modules:
+  rails_cache:
+  packs:
