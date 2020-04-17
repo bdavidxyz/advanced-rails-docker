@@ -22,10 +22,10 @@ x-backend: &backend
   tty: true
   volumes:
     - .:/railsapp:cached
-    - rails_cache:/railsapp/tmp/cache
+    # - rails_cache:/railsapp/tmp/cache
     - bundle:/usr/local/bundle
     - node_modules:/railsapp/node_modules
-    - packs:/railsapp/public/packs
+    # - packs:/railsapp/public/packs
     - .dockerdev/.psqlrc:/root/.psqlrc:ro
     - .dockerdev/.bashrc:/root/.bashrc:ro
   environment:
@@ -99,12 +99,12 @@ services:
       - .:/railsapp:cached
       - bundle:/usr/local/bundle
       - node_modules:/railsapp/node_modules
-      - packs:/railsapp/public/packs
+      # - packs:/railsapp/public/packs
 
 volumes:
   postgres:
   redis:
   bundle:
   node_modules:
-  rails_cache:
-  packs:
+  # rails_cache:
+  # packs:
