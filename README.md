@@ -31,7 +31,7 @@ docker-compose build
 
 Run :
 ```
-docker-compose run --rm web bash
+docker-compose run --rm rails bash
 $> create_new_rails_app 6.0.2.2
 ```
 
@@ -48,7 +48,7 @@ the script is under .dockerdev/.bashrc. It will
 
 Run :
 ```
-docker-compose run --rm web bash
+docker-compose run --rm rails bash
 $> create_demo_page calendar
 ```
 
