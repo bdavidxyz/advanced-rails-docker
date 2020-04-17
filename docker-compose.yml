@@ -1,7 +1,7 @@
 version: '2.2'
 
 x-app: &app
-  image: example-dev:1.0.0
+  image: advanced:1.0.1
   build:
     context: .
     args:
@@ -93,7 +93,7 @@ services:
 
   webpacker:
     <<: *app
-    command: ./bin/webpack-dev-server
+    command: bash -c "rm -rf /app/public/packs/* && bundle exec ./bin/webpack-dev-server"
     ports:
       - '3035:3035'
     volumes:
