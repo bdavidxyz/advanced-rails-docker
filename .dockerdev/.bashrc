@@ -17,9 +17,6 @@ create_demo_page() {
   printf "class ${1^}Controller < ApplicationController\nend" > app/controllers/$1_controller.rb
   echo -e "added an empty \e[32mapp/controllers/$1_controller.rb\e[0m"
   
-  mkdir "app/views/$1"
-  printf "<%%= javascript_pack_tag '$1' %%>\n<h1 class='c-$1'>${1^}</h1>\n" > app/views/$1/index.html.erb
-  echo -e "added simple view under \e[32mapp/views/$1/index.html.erb\e[0m"
 
   truncate -s 0 "app/assets/stylesheets/application.css"
   printf "/* = require_tree . */\n/* = require_self */" > app/assets/stylesheets/application.css
@@ -28,6 +25,10 @@ create_demo_page() {
   mkdir -p app/assets/stylesheets/components
   printf ".c-$1 {\n  color: green;\n}\n" > app/assets/stylesheets/components/$1.scss
   echo -e "added css component under \e[32mapp/assets/stylesheets/components/$1.scss\e[0m"
+
+  mkdir "app/views/$1"
+  printf "<%%= javascript_pack_tag '$1' %%>\n<h1 class='c-$1'>${1^}</h1>\n" > app/views/$1/index.html.erb
+  echo -e "added simple \"$1\" view under \e[32mapp/views/$1/index.html.erb\e[0m, previously created SCSS and JS are injected."
 }
 
 # Usage : use the function, followed by the Rails version number. Example :
