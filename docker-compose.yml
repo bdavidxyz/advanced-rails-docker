@@ -1,11 +1,9 @@
 version: '2.2'
 
 x-app: &app
-  env_file:
-    - .dockerenv
+  image: example-dev:1.0.0
   build:
     context: .
-    dockerfile: ./.dockerdev/Dockerfile
     args:
       RUBY_VERSION: "${RUBY_VERSION}"
       PG_MAJOR: "${PG_MAJOR}"
@@ -15,7 +13,6 @@ x-app: &app
   environment: &env
     NODE_ENV: development
     RAILS_ENV: ${RAILS_ENV:-development}
-  image: example-dev:1.1.0
   tmpfs:
     - /tmp
 
