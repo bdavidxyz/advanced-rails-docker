@@ -32,7 +32,7 @@ docker-compose build
 Run :
 ```
 docker-compose run --rm rails bash
-$> create_new_rails_app 6.0.2.2
+create_new_rails_app 6.0.2.2
 ```
 
 It will create a new rails application with version 6.0.2.2.
